@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184 Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2022</h1>
+<h1 align="middle">Project 1: Rasterizer</h1>
+<h2 align="middle">Joshua Chang, CS184-chimken</h2>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>In this project, I built a simple rasterizer that can draw cool things like triangles. It's a whole heck of a lot harder than I thought it would be, but it was a great way of taking all the concepts
+we learned in lecture and applying them to real world things. Unfortunately, due to some less-than-ideal circumstances as well as a metric boatload of other projects and exams, I decided to bite the bullet
+and just submit this project half-done. Sacrifices had to be made for the sake of my health and sanity. o7.</p>
+
+<h2 align="middle">Section I: Rasterization</h2>
+
+<h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
+
+<p>So I rasterized a single-color triangle by using the Three Line Point-in-Triange Test from lecture. I first established sample bounds defined by min/max x/y coordinates.
+I then sampled every pixel within the bounds and checked if it was inside the triangle using line equation tests. If the results of all three line equation tests had the same sign,
+that meant the sample was inside the triangle. Samples that were determined to be inside the triangle had their pixels filled in. This algorithm is no worse than one that checks each sample
+within the bounding box of the triangle because it does exactly that.</p>
+
+<div align="middle">
+    <img src="images/p1.png" align="middle" width="400px"/>
+    <figcaption align="middle">test4.svg with default viewing paramenters.</figcaption>
+</div>
+
+
+<h3 align="middle">Part 2: Antialiasing triangles</h3>
+
+<p>Supersampling is useful for anti-aliasing and getting rid of jaggies/hard edges. My supersampling algorithm was very similar to my initial single-color rasterizer algorithm. I actually
+didn't touch any function other than rasterize_triangle in the end, because I couldn't get them to work. Instead, I did color math and determined pixel color based on the percentage of samples
+inside the triangle. Apparently this assumes that the outside of the triangle is white, so it doesn't really work well, but I couldn't figure it out the other way.</p>
+
+<div align="middle">
+    <table width="100%" align="middle">
+        <td>
+            <img src="images/p2-2.png" align="middle" style="width:400px"/>
+            <figcaption align="middle">Sample Rate 1</figcaption>
+        </td>
+        <td>
+            <img src="images/p2-3.png" align="middle" style="width:400px"/>
+            <figcaption align="middle">Sample Rate 4</figcaption>
+        </td>
+        <td>
+            <img src="images/p2-4.png" align="middle" style="width:400px"/>
+            <figcaption align="middle">Sample Rate 16</figcaption>
+        </td>
+    </table>
+</div>
+
+<h3 align="middle">Part 3: Transforms</h3>
+
+<div align="middle">
+    <img src="images/p3.png" align="middle" width="400px"/>
+    <figcaption align="middle">Cubeman raising its arms and kicking something</figcaption>
+</div>
+
+<p>At first I wanted to have the cubeman flex its muscles while doing the splits, but halfway through I realized that he looked cooler on a single leg with the other kicking something. So I kept it like that.</p>
+
+<h2 align="middle">Section II: Sampling</h2>
+
+<h3 align="middle">Part 4: Barycentric coordinates</h3>
+
+
+<h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
+
+
+<h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
+
+
+
+<h2 align="middle">Section III: Art Competition</h2>
+<p>If you are not participating in the optional art competition, don't worry about this section!</p>
+
+<h3 align="middle">Part 7: Draw something interesting!</h3>
+
+</body>
+</html>
