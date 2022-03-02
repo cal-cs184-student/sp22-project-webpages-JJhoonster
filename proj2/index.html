@@ -1,7 +1,331 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 2 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+  <style>
+    body {
+      padding: 100px;
+      width: 1000px;
+      margin: auto;
+      text-align: left;
+      font-weight: 300;
+      font-family: 'Open Sans', sans-serif;
+      color: #121212;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: 'Source Sans Pro', sans-serif;
+    }
+  </style>
+  <title>CS 184 Mesh Editor</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+  <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2022</h1>
+  <h1 align="middle">Project 2: Mesh Editor</h1>
+  <h2 align="middle">Joshua Chang, CS184-muffin</h2>
+
+  <br><br>
+
+  <div>
+
+    <h2 align="middle">Overview</h2>
+    <p>In this project, I explored geometric modeling by implementing a mesh renderer. The first section involved building Bezier cures and surfaces using the
+	de Casteljau algorithm. I personally think it's really cool how you can just take a bunch of points in space and create a mesh out of them. The second section
+	involved manipulating triangle meshes represented by half-edge data structures. The half-edge data structure was super cool and really easy to use. It really
+	made all the different elements of the mesh easy to keep track of and manipulate. Flipping and splitting edges in order to be able to upsample meshes was pretty 
+	fun, and being able to see how upsampling smooths out different meshes step by step was great.</p>
+
+    <h2 align="middle">Section I: Bezier Curves and Surfaces</h2>
+
+    <h3 align="middle">Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
+
+    <p>Casteljau's algorithm is a method of evaluating Bezier curves that runs linear interpolation on an a set of control points until
+	there is only 1 control point. My implementation lerps every consecutive pair of control points, pushes the results to a new vector, and
+	returns that vector.
+    </p>
+
+    <div align="middle">
+      <table style="width=100%" cellspacing="10" cellpadding="10">
+        <tr>
+          <td>
+            <img src="images/p1-1.png" align="middle" width="500px" />
+            <figcaption align="middle">Bezier curve with 6 control points, Level 1</figcaption>
+          </td>
+          <td>
+            <img src="images/p1-2.png" align="middle" width="500px" />
+            <figcaption align="middle">Bezier curve with 6 control points, Level 2</figcaption>
+          </td>
+        </tr>
+        <br>
+        <tr>
+          <td>
+            <img src="images/p1-3.png" align="middle" width="500px" />
+            <figcaption align="middle">Bezier curve with 6 control points, Level 3</figcaption>
+          </td>
+          <td>
+            <img src="images/p1-4.png" align="middle" width="500px" />
+            <figcaption align="middle">Bezier curve with 6 control points, Level 4</figcaption>
+          </td>
+        </tr>
+		<br>
+		<tr>
+          <td>
+            <img src="images/p1-5.png" align="middle" width="500px" />
+            <figcaption align="middle">Bezier curve with 6 control points, Level 5</figcaption>
+          </td>
+          <td>
+            <img src="images/p1-6.png" align="middle" width="500px" />
+            <figcaption align="middle">Bezier curve with 6 control points, Level 6</figcaption>
+          </td>
+        </tr>
+		<br>
+		<tr>
+          <td>
+            <img src="images/p1-7.png" align="middle" width="500px" />
+            <figcaption align="middle">Bezier curve with 6 control points, Completed curve</figcaption>
+          </td>
+          <td>
+            <img src="images/p1-8.png" align="middle" width="500px" />
+            <figcaption align="middle">Slightly different control points and t</figcaption>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+
+    <h3 align="middle">Part 2: Bezier surfaces with separable 1D de Casteljau subdivision</h3>
+	
+	<p>Casteljau's algorithm extends to Bezier surfaces by basically evaluating a bunch of 2D Bezier curves in one dimension, and then
+	taking each of those evaluated points and using them as control points to evaluate more 2D Bezier curves in another dimension. My implementation
+	runs the 2D algorithm for every set of control points in one dimension, then takes those evaluated points and runs the 2D algorithm again using
+	them as new control points.
+    </p>
+	
+	<div align="middle">
+		<img src="images/p2-1.png" align="middle" width="500px" />
+        <figcaption align="middle">teapot.bez</figcaption>
+	</div>
+
+
+
+    <h2 align="middle">Section II: Sampling</h2>
+
+    <h3 align="middle">Part 3: Average normals for half-edge meshes</h3>
+	
+	<p>In order to implement area-weighted vertex normals, I grabbed the Face::normal function defined in halfEdgeMesh.cpp as a base and modified
+	it to compute the vertex normal. To compute the normals of the neighboring triangles, I made sure to set h to h->twin()-next() at the end of each
+	loop so that it starts at the vector coming out of the vertex.
+    </p>
+	
+	<div align="middle">
+      <table style="width=100%" cellspacing="10" cellpadding="10">
+        <tr>
+          <td>
+            <img src="images/p3-1.png" align="middle" width="500px" />
+            <figcaption align="middle">teapot.dae without vertex normals</figcaption>
+          </td>
+          <td>
+            <img src="images/p3-2.png" align="middle" width="500px" />
+            <figcaption align="middle">teapot.dae with vertex normals</figcaption>
+          </td>
+        </tr>
+	  </table>
+    </div>		
+
+
+    <h3 align="middle">Part 4: Half-edge flip</h3>
+	
+	<p>I implemented the half-edge flip operation by first listing out every single element in a pair of triangles, and then manually setting every
+	element pointer post-flip following this diagram:
+    </p>
+	
+	<div align="middle">
+		<img src="images/p4-1.png" align="middle" width="500px" />
+	</div>
+
+	<p>When I said that I manually set every element, I really do mean EVERY element. This was to prevent me from forgetting any pointer reassignments.
+	I later carefully went through and deleted some extraneous assignments after I was confident it worked.
+    </p>
+	
+	<div align="middle">
+      <table style="width=100%" cellspacing="10" cellpadding="10">
+        <tr>
+          <td>
+            <img src="images/p4-2.png" align="middle" width="500px" />
+            <figcaption align="middle">No flip</figcaption>
+          </td>
+          <td>
+            <img src="images/p4-3.png" align="middle" width="500px" />
+            <figcaption align="middle">One flip</figcaption>
+          </td>
+        </tr>
+		<br>
+		<tr>
+          <td>
+            <img src="images/p4-4.png" align="middle" width="500px" />
+            <figcaption align="middle">Flip back</figcaption>
+          </td>
+          <td>
+            <img src="images/p4-5.png" align="middle" width="500px" />
+            <figcaption align="middle">A bunch of random flips</figcaption>
+          </td>
+        </tr>
+	  </table>
+    </div>		
+	
+	<p>Thanks to my careful preparation and checks, I didn't have to go on a debugging journey of epic proportions. It was relatively straightforward
+	to just follow the diagram.
+    </p>
+
+    <h3 align="middle">Part 5: Half-edge split</h3>
+	
+	<p>The way I implemented half-edge split is very similar to how I implemented half-edge flip. However, I couldn't find a convenient diagram for split on Piazza or online,
+	so I fired up trusty ole' Photoshop and made my own:
+    </p>
+	
+	<div align="middle">
+		<img src="images/p5-1.png" align="middle" width="500px" />
+	</div>
+	
+	<p>I'm quite proud of how crisp and clean it looks. Again, I listed out every single element present in the 4 triangles and manually set them. Since this was a little more
+	complicated than half-edge flip due to the increase in the number of elements, I only deleted a few extraneous assignments that I was sure wouldn't break anything with their
+	absence. 
+    </p>
+	
+	<div align="middle">
+      <table style="width=100%" cellspacing="10" cellpadding="10">
+        <tr>
+          <td>
+            <img src="images/p5-2.png" align="middle" width="500px" />
+            <figcaption align="middle">No split</figcaption>
+          </td>
+          <td>
+            <img src="images/p5-3.png" align="middle" width="500px" />
+            <figcaption align="middle">One split</figcaption>
+          </td>
+        </tr>
+		<br>
+		<tr>
+          <td>
+            <img src="images/p5-4.png" align="middle" width="500px" />
+            <figcaption align="middle">A bunch of splits</figcaption>
+          </td>
+          <td>
+            <img src="images/p5-5.png" align="middle" width="500px" />
+            <figcaption align="middle">A bunch of random flips and splits</figcaption>
+          </td>
+        </tr>
+	  </table>
+    </div>
+	
+	<p>Similar to half-edge flip, I didn't have to go on a debugging journey of epic proportions thanks to my careful preparation and checks. It was relatively straightforward
+	to just follow the diagram.
+    </p>
+
+
+    <h3 align="middle">Part 6: Loop subdivision for mesh upsampling</h3>
+	
+	<p>I implemented Loop subdivision by pretty much just following the commented steps in the code skeleton. I first computed new positions for all the old vertices using
+	the Loop subdivision rule and equations outlined in the spec. I did forget to increment n initially, which led to this pretty cool bug:
+    </p>
+	
+	<div align="middle">
+		<img src="images/p6-1.png" align="middle" width="500px" />
+		<figcaption align="middle">The result when you don't increment n when calculating new vertex positions</figcaption>
+	</div>
+	
+	<p>Computing the updated vertex positions associated with edges was a rather straightforward plug-in equation. I was initially concerned that my arbitrary assignment
+	of half-edges to edges in my splitEdge implementation would screw up the numbers for A/B/C/D, but then I realized that it literally didn't matter. Splitting every existing edge
+	in the mesh just entailed iterating through the edges and setting new vertex positions. I made sure to keep track of how many old edges there were while iterating through the 
+	previous step, so knowing when to stop wasn't an issue. It was also at this point that I went back into the splitEdge function and set isNew flags manually, since I thought it would be
+	easier that way. I then flipped any new edge that connects an old and new vertex. Then I actually set the final vertex positions.
+    </p>
+	
+	<div align="middle">
+      <table style="width=100%" cellspacing="10" cellpadding="10">
+        <tr>
+          <td>
+            <img src="images/p6-2.png" align="middle" width="500px" />
+            <figcaption align="middle">Upsample 0</figcaption>
+          </td>
+          <td>
+            <img src="images/p6-3.png" align="middle" width="500px" />
+            <figcaption align="middle">Upsample 1</figcaption>
+          </td>
+        </tr>
+		<br>
+		<tr>
+          <td>
+            <img src="images/p6-4.png" align="middle" width="500px" />
+            <figcaption align="middle">Upsample 2</figcaption>
+          </td>
+          <td>
+            <img src="images/p6-5.png" align="middle" width="500px" />
+            <figcaption align="middle">Upsample 3</figcaption>
+          </td>
+        </tr>
+	  </table>
+    </div>
+	<div align="middle">
+		<img src="images/p6-6.png" align="middle" width="500px" />
+		<figcaption align="middle">Upsample 4</figcaption>
+	</div>
+	
+	<p>The sharp corners and edges soften a lot and become rounded after loop subdivision. We can reduce this effect by pre-splitting these sharp corners:
+    </p>
+	
+	<div align="middle">
+      <table style="width=100%" cellspacing="10" cellpadding="10">
+        <tr>
+          <td>
+            <img src="images/p6-7.png" align="middle" width="500px" />
+            <figcaption align="middle">Pre-split edges</figcaption>
+          </td>
+          <td>
+            <img src="images/p6-8.png" align="middle" width="500px" />
+            <figcaption align="middle">After upsampling</figcaption>
+          </td>
+        </tr>
+	  </table>
+    </div>	
+	
+	<p>As you can see, the sharp corners are much more defined. It retains more of its original shape.
+    </p>
+	
+	<br>
+	
+	<p>The original cube becomes slightly asymmetric after repeated subdivisions because the triangles in the mesh aren't symmetric to begin with. We can simply flip the edges
+	on the face of the cube so that the triangles are symmetric to make the cube subdivide symmetrically.
+    </p>
+	
+	<div align="middle">
+      <table style="width=100%" cellspacing="10" cellpadding="10">
+        <tr>
+          <td>
+            <img src="images/p6-9.png" align="middle" width="500px" />
+            <figcaption align="middle">Original Cube</figcaption>
+          </td>
+          <td>
+            <img src="images/p6-10.png" align="middle" width="500px" />
+            <figcaption align="middle">Pre-processed Cube</figcaption>
+          </td>
+        </tr>
+	  </table>
+    </div>	
+	<div align="middle">
+		<img src="images/p6-11.png" align="middle" width="500px" />
+		<figcaption align="middle">Upsampled Pre-processed Cube</figcaption>
+	</div>
+
+
+</body>
+
 </html>
