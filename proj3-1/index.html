@@ -1,7 +1,321 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 3-1 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>  
+    div.padded {  
+      padding-top: 0px;  
+      padding-right: 100px;  
+      padding-bottom: 0.25in;  
+      padding-left: 100px;  
+    }  
+  </style> 
+<title>Joshua Chang  |  CS 184</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+</head>
+<body>
+<br />
+<h1 align="middle">Assignment 3-1: PathTracer</h1>
+    <h2 align="middle">Joshua Chang</h2>
+
+    <div class="padded">
+        <p>In this project, we implemented a basic pathtracer. To do this, we implemented ray generation and functions to test whether these rays intersect triangles and spheres. We also
+		implemented acceleration structures in the form of bounding volume hierarchies in order to speed up the rendering process. While I at least attempted the majority of this project,
+		I could not get the importance sampling algorithm to work for the life of me. As a result, the subsequent parts that were supposed to use importance sampling now use uniform hemisphere
+		sampling, which means that they're a lot noisier than they should be. I think they still look pretty, though.</p>
+
+    <h2 align="middle">Part 1: Ray Generation and Intersection</h2>
+        <p>In order to generate rays, we need to transform image coordinates into a 3D vector in camera space, then transform that vector into a ray in the world space. To transform image coordinates into a 3D vector 
+		in camera space, we map the bottom left and top right corners of the camera sensor to the normalized image coordinates (0,0) and (1,1) respectively. We can then use this to calculate the x and y coordinates
+		in camera space. In order to transform our 3D vector in camera space into the world space, we multiply it by the camera-to-world rotation matrix and normalize it. This normalized vector represents the direction
+		of the ray. The origin of the ray is the point the camera is looking at.
+		</p>
+		<p>
+		The first step of the rendering pipeline is for every pixel, randomly generate a number of samples and generate rays based on those samples. We then estimate the radiance of each ray, take the average, and update 
+		the pixel with this average.
+		</p>
+		<div align="middle">
+		  <table style="width=100%" cellspacing="10" cellpadding="10">
+			<tr>
+			  <td>
+				<img src="images/1-1.png" align="middle" width="500px" />
+				<figcaption align="middle">CBspheres_lambertian.dae with normal shading</figcaption>
+			  </td>
+			  <td>
+				<img src="images/1-2.png" align="middle" width="500px" />
+				<figcaption align="middle">CBgems.dae with normal shading</figcaption>
+			  </td>
+			</tr>
+			<br>
+			<tr>
+			  <td>
+				<img src="images/1-3.png" align="middle" width="500px" />
+				<figcaption align="middle">teapot.dae with normal shading</figcaption>
+			  </td>
+			  <td>
+				<img src="images/1-4.png" align="middle" width="500px" />
+				<figcaption align="middle">cow.dae with normal shading</figcaption>
+			  </td>
+			</tr>
+		  </table>
+		</div>
+		
+
+
+    <h2 align="middle">Part 2: Bounding Volume Hierarchy</h2>
+	
+		<p>For my BVH construction algorithm, first checked whether the size of our primitives exceeded the max_leaf_size. If it did, I then determined the longest axis so that I 
+		could split along that axis. After that determination, I partitioned the primitives into left and right nodes based on whether or not their centroids were <= the average of
+		the centroids along that axis. I chose the average of centroids as my splitting heuristic because I felt it would be the easiest to implement. The average is also always greater
+		than the minimum and less than the maximum unless every centroid is the exact same (which I'm pretty sure never happens), so we'll never run into the scenario where all primities
+		lie on one side of the split point and we segfault because of infinite recursion, because there will always be at least one primitive on one side.
+		</p>
+		
+		<div align="middle">
+		  <table style="width=100%" cellspacing="10" cellpadding="10">
+			<tr>
+			  <td>
+				<img src="images/2-3.png" align="middle" width="500px" />
+				<figcaption align="middle">maxplanck.dae with normal shading</figcaption>
+			  </td>
+			  <td>
+				<img src="images/2-4.png" align="middle" width="500px" />
+				<figcaption align="middle">maxplanck.dae render time</figcaption>
+			  </td>
+			</tr>
+			<br>
+			<tr>
+			  <td>
+				<img src="images/2-5.png" align="middle" width="500px" />
+				<figcaption align="middle">CBlucy.dae with normal shading</figcaption>
+			  </td>
+			  <td>
+				<img src="images/2-6.png" align="middle" width="500px" />
+				<figcaption align="middle">CBlucy.dae render time</figcaption>
+			  </td>
+			</tr>
+		  </table>
+		</div>
+		
+		<p>Rendering times with BVH acceleration are drastically faster than without BVH acceleration. Rendering cow.dae without BVH acceleration took a whopping 40 seconds, while rendering it
+		with BVH acceleration took less than 15 centiseconds. However, it did take a bit longer to build the BVH using BVH acceleration, which makes a lot of sense. But this overhead is completely
+		negligible. Spending 2.6 milliseconds to save over 39 full seconds is the greatest trade deal in the history of trade deals.
+		</p>
+		
+		<div align="middle">
+		  <table style="width=100%" cellspacing="10" cellpadding="10">
+			<tr>
+			  <td>
+				<img src="images/2-1.png" align="middle" width="500px" />
+				<figcaption align="middle">cow.dae render time without BVH acceleration</figcaption>
+			  </td>
+			  <td>
+				<img src="images/2-2.png" align="middle" width="500px" />
+				<figcaption align="middle">cow.dae render time with BVH acceleration</figcaption>
+			  </td>
+			</tr>
+		  </table>
+		</div>
+		
+		
+		<h2 align="middle">Part 3: Direct Illumination</h2>
+		
+		<p>
+		For the uniform hemisphere sampling algorithm, we first take a number of random samples around a hit point and construct the corresponding rays. If this ray doesn't intersect anything,
+		we discard the sample. If it does, we calculate the estimated reflection and add that to our output. We then normalize the final output by the number of samples and the probability of taking
+		each sample.
+		</p>
+		<p>
+		For the importance sampling algorithm, we take a number of samples from each light source. If the light isn't behind the surface at the hit point, we construct the corresponding rays. We then check
+		if this ray is being blocked by something. If it isn't, then we calculate the estimated reflection and add that to our output. We then normalize the final output by the number of samples and the pdf.
+		</p>
+		
+		<p>
+		My uniform hemisphere sampling renders were a bit dark for lower samples, but were perfectly fine at higher ones. However, I just couldn't get importance sampling to work for the life of me.
+		the lower samples have weird noise, and the higher samples are way too bright.
+		</p>
+       
+	   <div align="middle">
+		  <table style="width=100%" cellspacing="10" cellpadding="10">
+			<tr>
+			  <td>
+				<img src="images/3-1.png" align="middle" width="500px" />
+				<figcaption align="middle">Cbunny.dae with uniform hemisphere sampling (-s 16 -l 8)</figcaption>
+			  </td>
+			  <td>
+				<img src="images/3-2.png" align="middle" width="500px" />
+				<figcaption align="middle">Cbunny.dae with uniform hemisphere sampling (-s 64 -l 32)</figcaption>
+			  </td>
+			</tr>
+			<br>
+			<tr>
+			  <td>
+				<img src="images/3-3.png" align="middle" width="500px" />
+				<figcaption align="middle">Cbunny.dae with importance sampling (-s 1 -l 1 -m 1)</figcaption>
+			  </td>
+			  <td>
+				<img src="images/3-4.png" align="middle" width="500px" />
+				<figcaption align="middle">Cbunny.dae with importance sampling (-s 64 -l 32 -m 6)</figcaption>
+			  </td>
+			</tr>
+		  </table>
+		</div>
+	
+		<p>
+		Since I wasn't really able to get importance sampling to work, I couldn't really run tests on it. However, based on the result images provided in spec, I can make a comparison conjecture.
+		At the same samples per pixel, it appears that importance sampling renders are much less grainy. I presume this indicates that importance sampling is able to converge to the true lighting of the
+		scene much faster and with fewer samples than uniform hemisphere sampling.
+		</p>
+		
+		
+		<h2 align="middle">Part 4: Global Illumination</h2>
+		
+		<p>
+		For my indirect lighting function, I first set my output to the result of one_bounce_radiance. We then take a random sample at the hit point and construct the corresponding ray with r.depth - 1. If the ray intersects
+		anything, we then start our recursive calls on that new hit point. We make a recursive call if r.depth equals the max_ray_depth, since that ensures that we always make at least one indirect bounce regardless of 
+		Russian Roulette. Past that, we use Russian Roulette with a termination probability of 0.3 to determine whether we keep recursing.
+		</p>
+		
+		
+		<div align="middle">
+		  <table style="width=100%" cellspacing="10" cellpadding="10">
+			<tr>
+			  <td>
+				<img src="images/4-1.png" align="middle" width="500px" />
+				<figcaption align="middle">CBspheres_lambertian.dae, global illumination (-s 64 -l 16 -m 5)</figcaption>
+			  </td>
+			  <td>
+				<img src="images/4-2.png" align="middle" width="500px" />
+				<figcaption align="middle">CBbunny.dae, global illumination (-s 64 -l 16 -m 5)</figcaption>
+			  </td>
+			</tr>
+		  </table>
+		</div>
+		
+		<p>
+		Since I couldn't get my importance sampling implementation to work, I used uniform hemisphere sampling for all of my renders. As such, the results are a bit noisier than the ones in spec. I did confirm that
+		my renders get a little less noisy with more samples, but they took a really long time to render (like 13 minutes).
+		</p>
+		
+		<div align="middle">
+		  <table style="width=100%" cellspacing="10" cellpadding="10">
+			<tr>
+			  <td>
+				<img src="images/4-3.png" align="middle" width="500px" />
+				<figcaption align="middle">CBspheres_lambertian.dae, global illumination (-s 64 -l 32 -m 5)</figcaption>
+			  </td>
+			  <td>
+				<img src="images/4-4.png" align="middle" width="500px" />
+				<figcaption align="middle">CBbunny.dae, global illumination (-s 64 -l 32 -m 5)</figcaption>
+			  </td>
+			</tr>
+		  </table>
+		</div>
+		
+		<p>
+		The following renders are set to different maximum ray depths. We can see that as the maximum ray depth increases, more ares are lit by indirect illumination. This is most
+		noticeable along the area where the walls and ceilings meet.
+		</p>
+		
+		<div align="middle">
+		  <table style="width=100%" cellspacing="10" cellpadding="10">
+			<tr>
+			  <td>
+				<img src="images/4-5.png" align="middle" width="500px" />
+				<figcaption align="middle">CBbunny.dae with max_ray_depth set to 0</figcaption>
+			  </td>
+			  <td>
+				<img src="images/4-6.png" align="middle" width="500px" />
+				<figcaption align="middle">CBbunny.dae with max_ray_depth set to 1</figcaption>
+			  </td>
+			</tr>
+			<br>
+			<tr>
+			  <td>
+				<img src="images/4-7.png" align="middle" width="500px" />
+				<figcaption align="middle">CBbunny.dae with max_ray_depth set to 2</figcaption>
+			  </td>
+			  <td>
+				<img src="images/4-8.png" align="middle" width="500px" />
+				<figcaption align="middle">CBbunny.dae with max_ray_depth set to 3</figcaption>
+			  </td>
+			</tr>
+		  </table>
+		</div>
+		<div align="middle">
+			<img src="images/4-9.png" align="middle" width="500px" />
+			<figcaption align="middle">CBbunny.dae with max_ray_depth set to 100</figcaption>
+		</div>
+		
+		<p align="middle">
+		The following renders are set to different sample-per-pixel rates. We can see that as the sample-per-pixel rate increases, the render become brighter and much less noisy.
+		</p>
+		
+		<div align="middle">
+		  <table style="width=100%" cellspacing="10" cellpadding="10">
+			<tr>
+			  <td>
+				<img src="images/4-10.png" align="middle" width="500px" />
+				<figcaption align="middle">CBspheres_lambertian.dae with sample-per-pixel set to 1</figcaption>
+			  </td>
+			  <td>
+				<img src="images/4-11.png" align="middle" width="500px" />
+				<figcaption align="middle">CBspheres_lambertian.dae with sample-per-pixel set to 2</figcaption>
+			  </td>
+			</tr>
+			<br>
+			<tr>
+			  <td>
+				<img src="images/4-12.png" align="middle" width="500px" />
+				<figcaption align="middle">CBspheres_lambertian.dae with sample-per-pixel set to 4</figcaption>
+			  </td>
+			  <td>
+				<img src="images/4-13.png" align="middle" width="500px" />
+				<figcaption align="middle">CBspheres_lambertian.dae with sample-per-pixel set to 8</figcaption>
+			  </td>
+			</tr>
+			<br>
+			<tr>
+			  <td>
+				<img src="images/4-14.png" align="middle" width="500px" />
+				<figcaption align="middle">CBspheres_lambertian.dae with sample-per-pixel set to 16</figcaption>
+			  </td>
+			  <td>
+				<img src="images/4-15.png" align="middle" width="500px" />
+				<figcaption align="middle">CBspheres_lambertian.dae with sample-per-pixel set to 64</figcaption>
+			  </td>
+			</tr>
+		  </table>
+		</div>
+		<div align="middle">
+			<img src="images/4-16.png" align="middle" width="500px" />
+			<figcaption align="middle">CBspheres_lambertian.dae with sample-per-pixel set to 1024</figcaption>
+		</div>
+		
+		<h2 align="middle">Part 5: Adaptive Sampling</h2>
+		<p>
+		This part was SUPPOSED to be really simple and straightforward, I think. I just calculated standard deviation and mu using the formulas in spec every time we reached the end of a batch, and I broke out of the render loop 
+		if  1.96 * mu/sqrt(n) was less than or equal to maxTolerance * mu. I made sure to update s1 and s2 every sample and use the current sample as n. But uhhh....
+		</p>
+		
+		<div align="middle">
+		  <table style="width=100%" cellspacing="10" cellpadding="10">
+			<tr>
+			  <td>
+				<img src="images/5-1.png" align="middle" width="500px" />
+				<figcaption align="middle">CBbunny.dae, adaptive sampling</figcaption>
+			  </td>
+			  <td>
+				<img src="images/5-2.png" align="middle" width="500px" />
+				<figcaption align="middle">CBbunny_rate.png, global illumination</figcaption>
+			  </td>
+			</tr>
+		  </table>
+		</div>
+		
+		<p align="middle">
+		Yeah. I don't know why my bunny looks like the aftermath of a nuclear explosion. Who knows? Debugging is hard. Sadge.
+		</p>
+</div>
+</body>
 </html>
